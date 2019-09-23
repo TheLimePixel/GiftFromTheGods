@@ -1,0 +1,16 @@
+[
+{
+  "modid": "giftfromthegods",
+  "name": "Gift From The Gods",
+  "description": "A mod that gives players a random item every few seconds.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["TheEmosewaPixel"],
+  "credits": "The Forge and FML guys, for making this example",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
