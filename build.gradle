@@ -11,8 +11,8 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle'
 
-version = "com.emosewapixel.giftfromthegods"
-group = "$mc_version-$mod_version"
+version = "$mc_version-$mod_version"
+group = "com.emosewapixel.giftfromthegods"
 archivesBaseName = "giftfromthegods"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
