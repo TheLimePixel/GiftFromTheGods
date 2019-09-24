@@ -16,6 +16,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 @Mod("giftfromthegods")
 public class GiftFromTheGods {
 	private static List<Item> items;
+	protected static int delay;
 	
 	public GiftFromTheGods() {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueue);
@@ -48,18 +50,24 @@ public class GiftFromTheGods {
 	}
 	
 	private void enqueue(final InterModEnqueueEvent e) {
+		delay = ModConfig.time.get();
 		List<? extends String> blacklist = ModConfig.blackList.get();
 		if (ModConfig.invertBlackList.get())
 			items = blacklist.stream().map(s -> ForgeRegistries.ITEMS.getValue(new ResourceLocation(s))).collect(Collectors.toList());
 		else if (!ModConfig.blackList.get().isEmpty())
-			items = ForgeRegistries.ITEMS.getEntries().stream().filter(pair -> blacklist.contains(pair.getKey().toString())).map(Map.Entry::getValue).collect(Collectors.toList());
+			items = ForgeRegistries.ITEMS.getEntries().stream().filter(pair -> !blacklist.contains(pair.getKey().toString())).map(Map.Entry::getValue).collect(Collectors.toList());
 		else items = new ArrayList<>(ForgeRegistries.ITEMS.getValues());
+	}
+	
+	@SubscribeEvent
+	public void onServerAboutToStart(FMLServerAboutToStartEvent e) {
+		new DelayCommand(e.getServer().getCommandManager().getDispatcher());
 	}
 	
 	@SubscribeEvent
 	public void onWorldTick(TickEvent.PlayerTickEvent e) {
 		World world = e.player.world;
-		if (e.phase == TickEvent.Phase.START && !world.isRemote && world.getGameTime() % ModConfig.time.get() == 0)
+		if (e.phase == TickEvent.Phase.START && !world.isRemote && world.getGameTime() % delay == 0)
 			giveItem(items.get((int) (items.size() * new Random().nextFloat())), e.player);
 	}
 	
