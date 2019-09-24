@@ -1,10 +1,11 @@
 package com.emosewapixel.giftfromthegods;
 
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
@@ -15,24 +16,23 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Mod(modid = GiftFromTheGods.MODID, name = GiftFromTheGods.NAME, version = GiftFromTheGods.VERSION)
 public class GiftFromTheGods {
-	private static List<Item> items;
+	private static NonNullList<ItemStack> items = NonNullList.create();
 	
 	public static final String MODID = "giftfromthegods";
 	public static final String NAME = "Gift From The Gosa";
-	public static final String VERSION = "1.0.0";
+	public static final String VERSION = "1.0.1";
 	
 	@Mod.EventHandler
 	public static void init(FMLInitializationEvent e) {
 		List<String> blackList = Arrays.asList(ModConfig.blackList);
 		if (ModConfig.invertBlackList)
-			items = blackList.stream().map(s -> ForgeRegistries.ITEMS.getValue(new ResourceLocation(s))).collect(Collectors.toList());
+			blackList.stream().map(s -> ForgeRegistries.ITEMS.getValue(new ResourceLocation(s))).filter(Objects::nonNull).forEach(i -> i.getSubItems(CreativeTabs.SEARCH, items));
 		else if (!blackList.isEmpty())
-			items = ForgeRegistries.ITEMS.getEntries().stream().filter(pair -> blackList.contains(pair.getKey().toString())).map(Map.Entry::getValue).collect(Collectors.toList());
-		else items = new ArrayList<>(ForgeRegistries.ITEMS.getValues());
+			ForgeRegistries.ITEMS.getEntries().stream().filter(pair -> !blackList.contains(pair.getKey().toString())).map(Map.Entry::getValue).forEach(i -> i.getSubItems(CreativeTabs.SEARCH, items));
+		else ForgeRegistries.ITEMS.getValues().forEach(i -> i.getSubItems(CreativeTabs.SEARCH, items));
 	}
 	
 	@Mod.EventBusSubscriber(modid = GiftFromTheGods.MODID)
@@ -45,8 +45,8 @@ public class GiftFromTheGods {
 		}
 	}
 	
-	private static void giveItem(Item item, EntityPlayer player) {
-		ItemStack stack = new ItemStack(item);
+	private static void giveItem(ItemStack item, EntityPlayer player) {
+		ItemStack stack = item.copy();
 		boolean flag = player.inventory.addItemStackToInventory(stack);
 		if (flag) {
 			EntityItem itementity1 = player.dropItem(stack, false);
